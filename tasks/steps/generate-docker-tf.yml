@@ -1,0 +1,5 @@
+---
+- template:
+    src: "{{ role_path }}/templates/terraform/docker.tf.j2"
+    dest: "{{ stackhead__tf_project_folder }}/docker.tf"
+    force: true

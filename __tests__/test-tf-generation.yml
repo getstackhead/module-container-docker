@@ -90,7 +90,11 @@
                 src: data
                 dest: /var/lib/mysql
   tasks:
-    - debug:
-        msg: "Run your tests here by importing the respective tasks"
-    #- name: Generate Server Block Terraform file
-    #  import_tasks: "../tasks/steps/generate-serverblock-tf.yml"
+    - block:
+        - name: Generate Docker Terraform file
+          import_tasks: "../tasks/steps/generate-docker-tf.yml"
+          vars:
+            stackhead__containerdata_location_global: "./volumes/global/%s" # %s = src
+            stackhead__containerdata_location_services: "./volumes/services/%s/%s" # %s = service name, %s = src
+      vars:
+        role_path: ".."
