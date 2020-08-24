@@ -1,4 +1,6 @@
 # This task should install the software on the server.
 ---
-- debug:
-    msg: "Install your software here. You may include other roles and run smoke tests"
+- import_role:
+      name: geerlingguy.docker
+  vars:
+      docker_users: ["{{ ansible_env.SUDO_USER | d('root') }}", "stackhead"]
