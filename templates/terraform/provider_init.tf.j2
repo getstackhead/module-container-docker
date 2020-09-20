@@ -1,0 +1,9 @@
+provider "docker" {
+{%- for registry in app_config.container.registries | default([]) %}
+  registry_auth {
+    address = "{{ registry.url|default('registry.hub.docker.com') }}"
+    username = "{{ registry.username }}"
+    password = "{{ registry.password }}"
+  }
+{%- endfor %}
+}

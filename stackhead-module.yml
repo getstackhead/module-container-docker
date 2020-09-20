@@ -5,4 +5,4 @@ terraform:
     vendor: terraform-providers
     name: docker
     version: 2.7.2
-    init: false
+    init: templates/terraform/provider_init.tf.j2
