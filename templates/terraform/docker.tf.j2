@@ -7,6 +7,14 @@ resource "docker_container" "stackhead-{{ project_name }}-{{ service.name }}" {
   name  = "stackhead-{{ project_name }}-{{ service.name }}"
   restart = "always"
 
+  {% if service.hooks is defined %}
+  {% if service.hooks.after_setup is defined %}
+  provisioner "local-exec" {
+      command = "docker exec stackhead-{{ project_name }}-{{ service.name }} {{ service.hooks.after_setup|join(' && ') }}"
+  }
+  {% endif %}
+  {% endif %}
+
   networks_advanced {
     name = docker_network.stackhead-network-{{ project_name }}.name
     aliases = ["{{ service.name }}"]
