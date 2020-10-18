@@ -10,7 +10,7 @@ resource "docker_container" "stackhead-{{ project_name }}-{{ service.name }}" {
   {% if service.hooks is defined %}
   {% if service.hooks.after_setup is defined %}
   provisioner "local-exec" {
-      command = "docker exec stackhead-{{ project_name }}-{{ service.name }} {{ service.hooks.after_setup|join(' && ') }}"
+      command = "docker exec stackhead-{{ project_name }}-{{ service.name }} {{ service.hooks.after_setup|join(' && ')|replace('"', '\\"') }}"
   }
   {% endif %}
   {% endif %}

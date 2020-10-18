@@ -44,4 +44,4 @@
       with_items: "{{ folder_stats.results }}"
   when: managedContainerVolumePaths is defined
 - name: "StackHead::Container || Generate Terraform Docker configuration file | Project: {{ project_name }}"
-  import_tasks: "../tasks/steps/generate-docker-tf.yml"
+  import_tasks: "../tasks/docker_steps/generate-docker-tf.yml"

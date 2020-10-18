@@ -7,7 +7,7 @@
     - include_vars: "{{ stackhead__roles }}/stackhead_module_api/testdata/variables.yml"
     - block:
         - name: Generate Docker Terraform file
-          import_tasks: "../tasks/steps/generate-docker-tf.yml"
+          import_tasks: "../tasks/docker_steps/generate-docker-tf.yml"
           vars:
             stackhead__containerdata_location_global: "./volumes/global/%s" # %s = src
             stackhead__containerdata_location_services: "./volumes/services/%s/%s" # %s = service name, %s = src
