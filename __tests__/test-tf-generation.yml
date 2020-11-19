@@ -12,4 +12,4 @@
             stackhead__containerdata_location_global: "./volumes/global/%s" # %s = src
             stackhead__containerdata_location_services: "./volumes/services/%s/%s" # %s = service name, %s = src
       vars:
-        role_path: ".."
+        module_role_path: ".."
