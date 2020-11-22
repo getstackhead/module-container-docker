@@ -6,8 +6,8 @@ on:
     branches: [master]
 
 env:
-  ROLE_NAME: getstackhead.stackhead_webserver_docker
-  CONTAINER: getstackhead.stackhead_webserver_docker
+  ROLE_NAME: getstackhead.stackhead_container_docker
+  CONTAINER: getstackhead.stackhead_container_docker
   WEBSERVER: getstackhead.stackhead_webserver_nginx
   DOMAIN_NAME: "pr-${{ github.run_id }}-docker"
   DOMAIN_SUFFIX: "test.stackhead.io"
@@ -20,8 +20,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install Ansible v2.10 alpha (GH actions currently uses 2.9)
-        run: ANSIBLE_SKIP_CONFLICT_CHECK=1 pip install --user ansible==2.10.0a9 && ansible --version
+      - name: Remove Python 2 and old Ansible 2.9 version
+        run: sudo apt purge python ansible -y
+      - name: Set up Python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install Ansible v2.10.3 (GH actions currently uses 2.9)
+        run: pip install ansible==2.10.3
+      - name: Print Ansible and Python version
+        run: ansible --version && python --version
       - name: Get latest StackHead version
         run: ansible-galaxy collection install git+https://github.com/getstackhead/stackhead.git,next -f
       - run: ansible-playbook ./__tests__/test-tf-generation.yml
@@ -40,15 +48,17 @@ jobs:
     if: github.event.pull_request.draft == false
     steps:
     - uses: actions/checkout@v2
+    - name: Remove Python 2 and old Ansible 2.9 version
+      run: sudo apt purge python ansible -y
     - name: Set up Python 3
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
-    - name: Uninstall old Ansible
-      run: ansible --version && sudo apt purge ansible -y
-    - name: Install Ansible v2.10 alpha (GH actions currently uses 2.9)
-      run: sudo python -m pip install ansible==2.10.0a9 && ansible --version
-    - uses: webfactory/ssh-agent@v0.2.0
+    - name: Install Ansible v2.10.3 (GH actions currently uses 2.9)
+      run: pip install ansible==2.10.3
+    - name: Print Ansible and Python version
+      run: ansible --version && python --version
+    - uses: webfactory/ssh-agent@v0.4.1
       with:
         ssh-private-key: "${{ secrets.SSH_PRIVATE_KEY }}"
     - name: Setup Hetzner server
@@ -91,23 +101,73 @@ jobs:
         webserver: '${{ env.WEBSERVER }}'
         container: '${{ env.CONTAINER }}'
         rolename: '${{ env.ROLE_NAME }}'
+    #- name: Setup tmate session
+    #  uses: mxschmitt/action-tmate@v3
+    #  if: always()
+    - name: PR comment if integration stage was left intact
+      uses: mshick/add-pr-comment@v1
+      if: always() && contains( github.event.pull_request.labels.*.name, 'action/keep-integration-stage')
+      with:
+        message: |
+          Because the `action/keep-integration-stage` label was set, the integration stage is left intact.
+          You may now continue debugging on it, if you had been granted SSH access.
+
+          IP-Address: ${{ steps.setup_server.outputs.hcloud_server_created_ipv4 }}
+
+          ## Quick command reference
+
+          ### Build
+
+          ```bash
+          INPUT_IPADDRESS=${{ steps.setup_server.outputs.hcloud_server_created_ipv4 }} INPUT_DOMAIN=${{ env.DOMAIN_NAME }}.${{ env.DOMAIN_SUFFIX }} INPUT_DOMAIN2=sub.${{ env.DOMAIN_NAME }}.${{ env.DOMAIN_SUFFIX }} INPUT_WEBSERVER=getstackhead.stackhead_webserver_nginx INPUT_CONTAINER=getstackhead.stackhead_container_docker INPUT_SELFTEST=1 GITHUB_ACTION_PATH=. GITHUB_WORKSPACE=. ./ansible/__tests__/steps/build.sh
+          ```
+
+          ### Setup server
+
+          ```bash
+          INPUT_IPADDRESS=${{ steps.setup_server.outputs.hcloud_server_created_ipv4 }} INPUT_DOMAIN=${{ env.DOMAIN_NAME }}.${{ env.DOMAIN_SUFFIX }} INPUT_DOMAIN2=sub.${{ env.DOMAIN_NAME }}.${{ env.DOMAIN_SUFFIX }} INPUT_WEBSERVER=getstackhead.stackhead_webserver_nginx INPUT_CONTAINER=getstackhead.stackhead_container_docker INPUT_SELFTEST=1 GITHUB_ACTION_PATH=. GITHUB_WORKSPACE=. ./ansible/__tests__/steps/setup.sh
+          ```
+
+          ### Deploy application
+
+          ```bash
+          INPUT_IPADDRESS=${{ steps.setup_server.outputs.hcloud_server_created_ipv4 }} INPUT_DOMAIN=${{ env.DOMAIN_NAME }}.${{ env.DOMAIN_SUFFIX }} INPUT_DOMAIN2=sub.${{ env.DOMAIN_NAME }}.${{ env.DOMAIN_SUFFIX }} INPUT_WEBSERVER=getstackhead.stackhead_webserver_nginx INPUT_CONTAINER=getstackhead.stackhead_container_docker INPUT_SELFTEST=1 GITHUB_ACTION_PATH=. GITHUB_WORKSPACE=. ./ansible/__tests__/steps/deploy.sh
+          ```
+
+          ### Validate application
+
+          ```bash
+          INPUT_IPADDRESS=${{ steps.setup_server.outputs.hcloud_server_created_ipv4 }} INPUT_DOMAIN=${{ env.DOMAIN_NAME }}.${{ env.DOMAIN_SUFFIX }} INPUT_DOMAIN2=sub.${{ env.DOMAIN_NAME }}.${{ env.DOMAIN_SUFFIX }} INPUT_WEBSERVER=getstackhead.stackhead_webserver_nginx INPUT_CONTAINER=getstackhead.stackhead_container_docker INPUT_SELFTEST=1 GITHUB_ACTION_PATH=. GITHUB_WORKSPACE=. ./ansible/__tests__/steps/validate.sh
+          ```
+
+          ### Destroy application
+
+          ```bash
+          INPUT_IPADDRESS=${{ steps.setup_server.outputs.hcloud_server_created_ipv4 }} INPUT_DOMAIN=${{ env.DOMAIN_NAME }}.${{ env.DOMAIN_SUFFIX }} INPUT_DOMAIN2=sub.${{ env.DOMAIN_NAME }}.${{ env.DOMAIN_SUFFIX }} INPUT_WEBSERVER=getstackhead.stackhead_webserver_nginx INPUT_CONTAINER=getstackhead.stackhead_container_docker INPUT_SELFTEST=1 GITHUB_ACTION_PATH=. GITHUB_WORKSPACE=. ./ansible/__tests__/steps/destroy.sh
+          ```
+
+          ## Done debugging?
+
+          Destroy the stage by deleting the server in the Hetzner control panel and the DNS setting in the Cloudflare control panel.
+        repo-token: ${{ secrets.GH_TOKEN }}
+        allow-repeats: false
     - name: Remove DNS record
       uses: saitho/delete-dns-record@saitho-patch-1
-      if: always()
+      if: always() && !contains( github.event.pull_request.labels.*.name, 'action/keep-integration-stage')
       with:
         name: "${{ env.DOMAIN_NAME }}.${{ env.DOMAIN_SUFFIX }}"
         token: "${{ secrets.CLOUDFLARE_TOKEN }}"
         zone: "${{ secrets.CLOUDFLARE_ZONE }}"
     - name: Remove DNS record for subdomain
       uses: saitho/delete-dns-record@saitho-patch-1
-      if: always()
+      if: always() && !contains( github.event.pull_request.labels.*.name, 'action/keep-integration-stage')
       with:
         name: "sub.${{ env.DOMAIN_NAME }}.${{ env.DOMAIN_SUFFIX }}"
         token: "${{ secrets.CLOUDFLARE_TOKEN }}"
         zone: "${{ secrets.CLOUDFLARE_ZONE }}"
     - name: Remove Hetzner server
       uses: saitho/hetzner-cloud-action@v1.1.0
-      if: always()
+      if: always() && !contains( github.event.pull_request.labels.*.name, 'action/keep-integration-stage')
       with:
         action: remove
         server_id: "${{ steps.setup_server.outputs.hcloud_server_id }}"

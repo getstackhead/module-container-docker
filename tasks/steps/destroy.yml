@@ -1,6 +1,8 @@
 # This task processes the destroy hook placed on container configurations.
 ---
 - name: "Trigger pre-destroy hooks on containers"
-  raw: "docker exec stackhead-{{ project_name }}-{{ item.name }} {{ item.hooks.before_destroy|join(' && ') }}"
+  include_tasks: ./steps/sub/execute-destroy-hook.yml
   with_items: "{{ app_config.container.services }}"
+  loop_control:
+    loop_var: outer_item
   when: item.hooks is defined and item.hooks.before_destroy is defined
