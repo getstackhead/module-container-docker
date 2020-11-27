@@ -3,6 +3,7 @@
   connection: local
   vars:
     stackhead__roles: "~/.ansible/collections/ansible_collections/getstackhead/stackhead/roles"
+    module_role_path: ".."
   tasks:
     - include_vars: "{{ stackhead__roles }}/stackhead_module_api/testdata/variables.yml"
     - block:
@@ -11,5 +12,11 @@
           vars:
             stackhead__containerdata_location_global: "./volumes/global/%s" # %s = src
             stackhead__containerdata_location_services: "./volumes/services/%s/%s" # %s = service name, %s = src
-      vars:
-        module_role_path: ".."
+        - name: Generate System Docker Terraform file
+          import_tasks: "{{ module_role_path | default(role_path) }}/tasks/docker_steps/system-container.yml"
+          vars:
+            stackhead_syscontainer_name: test
+            stackhead_syscontainer_image: test/test:latest
+            stackhead_syscontainer_container_access: yes
+            ensure: present
+            stackhead__system_tf_root_folder: .
