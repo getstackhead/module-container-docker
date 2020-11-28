@@ -18,5 +18,6 @@
             stackhead_syscontainer_name: test
             stackhead_syscontainer_image: test/test:latest
             stackhead_syscontainer_container_access: yes
+            stackhead_syscontainer_command: test
             ensure: present
             stackhead__system_tf_root_folder: .
