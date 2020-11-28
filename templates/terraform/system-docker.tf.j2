@@ -6,6 +6,10 @@ resource "docker_container" "stackhead_internal-{{ stackhead_syscontainer_name }
   name  = "stackhead_internal-{{ stackhead_syscontainer_name }}"
   restart = "always"
 
+  {% if stackhead_syscontainer_command is defined %}
+  command = "{{ stackhead_syscontainer_command }}"
+  {% endif %}
+
 {%- for volume in stackhead_syscontainer_volumes|default([]) %}
   volumes {
     host_path = "{{ volume.split(":")[0] }}"
