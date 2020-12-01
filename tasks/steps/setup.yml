@@ -1,6 +1,6 @@
 # This task should install the software on the server.
 ---
 - import_role:
-      name: crivetimihai.virtualization.docker
+      name: getstackhead.virtualization.docker
   vars:
       docker_users: ["{{ ansible_env.SUDO_USER | d('root') }}", "stackhead"]
