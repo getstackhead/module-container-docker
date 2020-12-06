@@ -6,6 +6,4 @@ terraform:
     name: docker
     version: 2.7.2
     init: "{{ module_role_path | default(role_path) }}/templates/terraform/provider_init.tf.j2"
-container:
-  terraform:
-    resource_name: docker_container
+    resource_name: nginx_server_block
