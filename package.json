@@ -4,11 +4,12 @@
     "commit": "git-cz"
   },
   "devDependencies": {
+    "cli-table": "0.3.1",
     "@semantic-release/commit-analyzer": "^8.0.1",
-    "@semantic-release/github": "^7.0.7",
+    "@semantic-release/github": "^7.2.0",
     "@semantic-release/release-notes-generator": "^9.0.1",
-    "commitizen": "^4.1.2",
-    "cz-conventional-changelog": "^3.2.0",
-    "semantic-release": "^17.1.1"
+    "commitizen": "^4.2.2",
+    "cz-conventional-changelog": "^3.3.0",
+    "semantic-release": "^17.3.0"
   }
 }
