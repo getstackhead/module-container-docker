@@ -1,4 +1,5 @@
 ---
 stackhead__containerdata_location: "{{ stackhead__project_folder }}/container_data"
+stackhead__containerhooks_location: "{{ stackhead__project_folder }}/container_hooks"
 stackhead__containerdata_location_global: "{{ stackhead__containerdata_location }}/global/%s" # %s = src
 stackhead__containerdata_location_services: "{{ stackhead__containerdata_location }}/services/%s/%s" # %s = service name, %s = src
