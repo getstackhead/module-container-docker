@@ -1,6 +1,4 @@
 ---
-- raw: "docker exec stackhead-{{ project_name }}-{{ outer_item.name }} {{ item|getstackhead.stackhead.TFescapeDoubleQuotes }}"
-  with_items: "{{ outer_item.hooks.before_destroy|default([]) }}"
 - find:
     path: "{{ stackhead__containerhooks_location }}"
     patterns: "beforeDestroy_*"

@@ -5,4 +5,4 @@
   with_items: "{{ app_config.container.services }}"
   loop_control:
     loop_var: outer_item
-  when: item.hooks is defined and item.hooks.before_destroy is defined
+  when: item.hooks is defined and item.hooks.execute_before_destroy is defined
