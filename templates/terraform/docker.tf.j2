@@ -44,8 +44,7 @@ resource "docker_container" "stackhead-{{ project_name }}-{{ service.name }}" {
   env = [{% for envName, envVal in service.environment.items() %}{% if not loop.first %},{% endif %}"{{ envName }}={{ envVal|getstackhead.stackhead.TFreplace(project_name, 'docker_container') }}"{% endfor %}]
 {%- endif %}
 
-{%- if service.volumes is defined %}
-{%- for volume in service.volumes %}
+{%- for volume in service.volumes|default([]) %}
   volumes {
   {%- if volume.type == "custom" %}
     host_path = "{{ volume.src }}"
@@ -58,15 +57,13 @@ resource "docker_container" "stackhead-{{ project_name }}-{{ service.name }}" {
   {% if volume.mode is defined and volume.mode == 'ro' %}  read_only = true{% endif %}
   }
 {%- endfor %}
-{%- endif %}
-{%- if service.volumes_from is defined %}
-{%- for service in service.volumes_from %}
+{%- for service in service.volumes_from|default([]) %}
   volumes {
     from_container = docker_container.stackhead-{{ project_name }}-{{ service | regex_replace(':ro$','') }}.name
     {% if service.endswith(':ro') %}read_only = true{% endif %}
   }
 {%- endfor %}
-{%- endif %}
+  depends_on = [{%- for service in service.volumes_from|default([]) %}docker_container.stackhead-{{ project_name }}-{{ service | regex_replace(':ro$','') }}{% if not loop.first %},{% endif %}{%- endfor %}]
 }
 {% endfor %}
 

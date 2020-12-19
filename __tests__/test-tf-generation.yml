@@ -12,6 +12,7 @@
           vars:
             stackhead__containerdata_location_global: "./volumes/global/%s" # %s = src
             stackhead__containerdata_location_services: "./volumes/services/%s/%s" # %s = service name, %s = src
+            stackhead__containerhooks_location: "./myproject/containerhooks/"
         - name: Generate System Docker Terraform file
           import_tasks: "{{ module_role_path | default(role_path) }}/tasks/docker_steps/system-container.yml"
           vars:
