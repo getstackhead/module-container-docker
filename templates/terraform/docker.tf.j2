@@ -9,6 +9,7 @@ data "docker_registry_image" "stackhead-{{ project_name }}-{{ service.name }}" {
 resource "docker_image" "stackhead-{{ project_name }}-{{ service.name }}" {
   name          = data.docker_registry_image.stackhead-{{ project_name }}-{{ service.name }}.name
   pull_triggers = [data.docker_registry_image.stackhead-{{ project_name }}-{{ service.name }}.sha256_digest]
+  keep_locally = true
 }
 
 resource "docker_container" "stackhead-{{ project_name }}-{{ service.name }}" {
