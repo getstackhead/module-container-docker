@@ -1,6 +1,5 @@
 # This task should configure the software for the given project.
 ---
-- include_tasks: ./steps/sub/migration.yml
 - name: "StackHead::Container || Build src folder list || Project: {{ project_name }}"
   block:
     - name: "Container hooks location"

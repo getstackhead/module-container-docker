@@ -1,6 +1,5 @@
 # This task should install the software on the server.
 ---
-- include_tasks: ./steps/sub/migration.yml
 - import_role:
       name: getstackhead.virtualization.docker
   vars:
