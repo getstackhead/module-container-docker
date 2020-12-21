@@ -1,5 +1,6 @@
 # This task processes the destroy hook placed on container configurations.
 ---
+- include_tasks: ./steps/sub/migration.yml
 - name: "Trigger pre-destroy hooks on containers"
   include_tasks: ./steps/sub/execute-destroy-hook.yml
   with_items: "{{ app_config.container.services }}"
