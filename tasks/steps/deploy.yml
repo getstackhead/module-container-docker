@@ -59,7 +59,7 @@
       with_items: "{{ app_config.container.services }}"
 - name: Copy hook files
   synchronize:
-    src: "{{ stackhead__local_config_file|dirname }}/{{ item.src }}"
+    src: "{{ stackhead__config_folder }}/{{ item.src }}"
     dest: "{{ stackhead__containerhooks_location }}/{{ item.prefix}}_{{ item.src|basename }}"
     perms: false
     rsync_opts:
