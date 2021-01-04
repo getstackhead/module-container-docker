@@ -3,16 +3,19 @@
 
 {% for service in app_config.container.services %}
 data "docker_registry_image" "stackhead-{{ project_name }}-{{ service.name }}" {
+  provider = docker.{{ project_name }}
   name = "{{ service.image }}"
 }
 
 resource "docker_image" "stackhead-{{ project_name }}-{{ service.name }}" {
+  provider = docker.{{ project_name }}
   name          = data.docker_registry_image.stackhead-{{ project_name }}-{{ service.name }}.name
   pull_triggers = [data.docker_registry_image.stackhead-{{ project_name }}-{{ service.name }}.sha256_digest]
   keep_locally = true
 }
 
 resource "docker_container" "stackhead-{{ project_name }}-{{ service.name }}" {
+  provider = docker.{{ project_name }}
   image = docker_image.stackhead-{{ project_name }}-{{ service.name }}.latest
   name  = "stackhead-{{ project_name }}-{{ service.name }}"
   restart = "always"
@@ -75,6 +78,7 @@ resource "docker_container" "stackhead-{{ project_name }}-{{ service.name }}" {
     {%- set sanitizedSrc = src | regex_replace('[^\w]', '_') %}
     {%- if volume.type == "local" %}
 resource "docker_volume" "local-{{ project_name }}-{{ service.name }}-{{ sanitizedSrc }}" {
+  provider = docker.{{ project_name }}
   name = "local-{{ project_name }}-{{ service.name }}-{{ sanitizedSrc }}"
   driver_opts = {
     type: "none",
@@ -84,6 +88,7 @@ resource "docker_volume" "local-{{ project_name }}-{{ service.name }}-{{ sanitiz
 }
     {%- elif volume.type == "global" and sanitizedSrc not in globalVolumeKeys %}
 resource "docker_volume" "global-{{ project_name }}-{{ sanitizedSrc }}" {
+  provider = docker.{{ project_name }}
   name = "global-{{ project_name }}-{{ sanitizedSrc }}"
   driver_opts = {
     type: "none",
@@ -97,5 +102,6 @@ resource "docker_volume" "global-{{ project_name }}-{{ sanitizedSrc }}" {
 {%- endfor %}
 
 resource "docker_network" "stackhead-network-{{ project_name }}" {
+  provider = docker.{{ project_name }}
   name = "stackhead-network-{{ project_name }}"
 }
