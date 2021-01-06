@@ -7,7 +7,7 @@
         managedContainerFolders: ["{{ stackhead__containerhooks_location }}"]
     - name: "Collect local volumes"
       set_fact:
-        managedContainerFolders: "{{ managedContainerFolders|default([]) + [ ''~ stackhead__containerdata_location_services|format(item.0.name, item.1.src|default()) ~'' ] }}"
+        managedContainerFolders: "{{ managedContainerFolders|d([]) + [ ''~ stackhead__containerdata_location_services|format(item.0.name, item.1.src|d()) ~'' ] }}"
       when: item.1.type == 'local'
       with_subelements:
         - "{{ app_config.container.services }}"
@@ -16,7 +16,7 @@
           skip_missing: True
     - name: "Collect global volumes"
       set_fact:
-        managedContainerFolders: "{{ managedContainerFolders|default([]) + [ '' ~ stackhead__containerdata_location_global|format(item.1.src|default()) ~ '' ] }}"
+        managedContainerFolders: "{{ managedContainerFolders|d([]) + [ '' ~ stackhead__containerdata_location_global|format(item.1.src|d()) ~ '' ] }}"
       when: item.1.type == 'global'
       with_subelements:
         - "{{ app_config.container.services }}"
@@ -25,7 +25,7 @@
           skip_missing: True
     - name: "Collect custom volumes"
       set_fact:
-        managedContainerFolders: "{{ managedContainerFolders|default([]) + [ '' ~ item.1.src ~ '' ] }}"
+        managedContainerFolders: "{{ managedContainerFolders|d([]) + [ '' ~ item.1.src ~ '' ] }}"
       when: item.1.type == 'custom'
       with_subelements:
         - "{{ app_config.container.services }}"
@@ -50,11 +50,11 @@
   raw: "rm -rf {{ stackhead__containerhooks_location }}/*"
 - block:
     - set_fact:
-        collected_hooks: "{{ collected_hooks|default([]) + [{ 'src': item.hooks.execute_after_setup, 'prefix': 'afterSetup' }] }}"
+        collected_hooks: "{{ collected_hooks|d([]) + [{ 'src': item.hooks.execute_after_setup, 'prefix': 'afterSetup' }] }}"
       when: item.hooks.execute_after_setup is defined
       with_items: "{{ app_config.container.services }}"
     - set_fact:
-        collected_hooks: "{{ collected_hooks|default([]) + [{ 'src': item.hooks.execute_before_destroy, 'prefix': 'beforeDestroy' }] }}"
+        collected_hooks: "{{ collected_hooks|d([]) + [{ 'src': item.hooks.execute_before_destroy, 'prefix': 'beforeDestroy' }] }}"
       when: item.hooks.execute_before_destroy is defined
       with_items: "{{ app_config.container.services }}"
 - name: Copy hook files
@@ -64,6 +64,6 @@
     perms: false
     rsync_opts:
       - "--chmod=F755"
-  with_items: "{{ collected_hooks|default([]) }}"
+  with_items: "{{ collected_hooks|d([]) }}"
 - name: "StackHead::Container || Generate Terraform Docker configuration file | Project: {{ project_name }}"
   include_tasks: "{{ module_role_path | default(role_path) }}/tasks/docker_steps/generate-docker-tf.yml"
