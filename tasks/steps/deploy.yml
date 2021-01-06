@@ -45,17 +45,17 @@
         mode: 0755
       when: item.stat.exists == false
       with_items: "{{ folder_stats.results }}"
-  when: managedContainerFolders is defined
+  when: managedContainerFolders|d([]) != []
 - name: remove old hook files
   raw: "rm -rf {{ stackhead__containerhooks_location }}/*"
 - block:
     - set_fact:
         collected_hooks: "{{ collected_hooks|d([]) + [{ 'src': item.hooks.execute_after_setup, 'prefix': 'afterSetup' }] }}"
-      when: item.hooks.execute_after_setup is defined
+      when: item.hooks.execute_after_setup|d("") != ""
       with_items: "{{ app_config.container.services }}"
     - set_fact:
         collected_hooks: "{{ collected_hooks|d([]) + [{ 'src': item.hooks.execute_before_destroy, 'prefix': 'beforeDestroy' }] }}"
-      when: item.hooks.execute_before_destroy is defined
+      when: item.hooks.execute_before_destroy|d("") != ""
       with_items: "{{ app_config.container.services }}"
 - name: Copy hook files
   synchronize:
