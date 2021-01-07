@@ -4,7 +4,7 @@ terraform:
   provider:
     vendor: kreuzwerker
     name: docker
-    version: 2.8.0
+    version: 2.9.0
     resource_name: docker_container
     init: "{{ module_role_path|d(role_path) }}/templates/terraform/provider_init.tf.j2"
     provider_per_project: true
