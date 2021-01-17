@@ -20,6 +20,24 @@ resource "docker_container" "stackhead-{{ project_name }}-{{ service.name }}" {
   name  = "stackhead-{{ project_name }}-{{ service.name }}"
   restart = "always"
 
+{# Ensure volume directories have correct user (there was an issue with mariadb) #}
+{%- for volume in service.volumes|default([]) %}
+
+{%- if volume.type == "local" %}
+    {%- set path = stackhead__containerdata_location_services|format(service.name, volume.src) %}
+{%- elif volume.type == "custom" %}
+    {%- set path = volume.src %}
+{%- elif volume.type == "global" %}
+    {%- set path = stackhead__containerdata_location_global|format(volume.src) %}
+{%- endif %}
+
+{%- if volume.user|d('') != '' and path|d('') != '' %}
+  provisioner "local-exec" {
+      command = "chown -R {{ volume.user }}:stackhead {{ path }}"
+  }
+{%- endif %}
+{%- endfor %}
+
   {% if service.hooks is defined %}
   {% if service.hooks.execute_after_setup is defined %}
   provisioner "local-exec" {

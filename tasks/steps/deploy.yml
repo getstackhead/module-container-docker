@@ -4,10 +4,10 @@
   block:
     - name: "Container hooks location"
       set_fact:
-        managedContainerFolders: ["{{ stackhead__containerhooks_location }}"]
+        managedContainerFolders: [{ 'path': "{{ stackhead__containerhooks_location }}" }]
     - name: "Collect local volumes"
       set_fact:
-        managedContainerFolders: "{{ managedContainerFolders|d([]) + [ ''~ stackhead__containerdata_location_services|format(item.0.name, item.1.src|d()) ~'' ] }}"
+        managedContainerFolders: "{{ managedContainerFolders|d([]) + [ { 'path': stackhead__containerdata_location_services|format(item.0.name, item.1.src|d()), 'user': item.1.user|d('') } ] }}"
       when: item.1.type == 'local'
       with_subelements:
         - "{{ app_config.container.services }}"
@@ -16,7 +16,7 @@
           skip_missing: True
     - name: "Collect global volumes"
       set_fact:
-        managedContainerFolders: "{{ managedContainerFolders|d([]) + [ '' ~ stackhead__containerdata_location_global|format(item.1.src|d()) ~ '' ] }}"
+        managedContainerFolders: "{{ managedContainerFolders|d([]) + [ { 'path': stackhead__containerdata_location_global|format(item.1.src|d()), 'user': item.1.user|d('') } ] }}"
       when: item.1.type == 'global'
       with_subelements:
         - "{{ app_config.container.services }}"
@@ -25,7 +25,7 @@
           skip_missing: True
     - name: "Collect custom volumes"
       set_fact:
-        managedContainerFolders: "{{ managedContainerFolders|d([]) + [ '' ~ item.1.src ~ '' ] }}"
+        managedContainerFolders: "{{ managedContainerFolders|d([]) + [ { 'path': item.1.src, 'user': item.1.user|d('') } ] }}"
       when: item.1.type == 'custom'
       with_subelements:
         - "{{ app_config.container.services }}"
@@ -35,17 +35,27 @@
 - block:
     - name: "StackHead::Container || Checking project Docker folders"
       stat:
-        path: "{{ item }}"
+        path: "{{ item.path }}"
       register: folder_stats
       with_items: "{{ managedContainerFolders }}"
     - name: "StackHead::Container || Creating missing project Docker folders"
       file:
-        path: "{{ item.item }}"
+        path: "{{ item.item.path }}"
         state: directory
         mode: 0755
+        owner: stackhead
+        group: stackhead
       when: item.stat.exists == false
       with_items: "{{ folder_stats.results }}"
+    - name: Adjust Docker folder permissions
+      file:
+        path: "{{ item.path }}"
+        owner: "{{ (item.user|string).split(':')[0] }}"
+        group: stackhead
+      when: item.user is defined and item.user != ''
+      with_items: "{{ managedContainerFolders }}"
   when: managedContainerFolders|d([]) != []
+
 - name: remove old hook files
   raw: "rm -rf {{ stackhead__containerhooks_location }}/*"
 - block:
