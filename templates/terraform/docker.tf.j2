@@ -18,7 +18,12 @@ resource "docker_container" "stackhead-{{ project_name }}-{{ service.name }}" {
   provider = docker.{{ project_name }}
   image = docker_image.stackhead-{{ project_name }}-{{ service.name }}.latest
   name  = "stackhead-{{ project_name }}-{{ service.name }}"
-  restart = "always"
+  restart = "unless-stopped"
+
+  labels {
+    label = "stackhead.project"
+    value = "{{ project_name }}"
+  }
 
 {# Ensure volume directories have correct user (there was an issue with mariadb) #}
 {%- for volume in service.volumes|default([]) %}
