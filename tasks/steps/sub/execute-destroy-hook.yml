@@ -3,5 +3,5 @@
     path: "{{ stackhead__containerhooks_location }}"
     patterns: "beforeDestroy_*"
   register: destroy_hook_files
-- raw: "docker cp -a {{ item.path }} stackhead-{{ project_name }}-{{ service.name }}:/{{ item.path|basename }} && docker exec stackhead-{{ project_name }}-{{ service.name }} sh /{{ item.path|basename }}"
+- raw: "docker cp {{ item.path }} stackhead-{{ project_name }}-{{ service.name }}:/{{ item.path|basename }} && docker exec stackhead-{{ project_name }}-{{ service.name }} sh /{{ item.path|basename }}"
   with_items: "{{ destroy_hook_files.files }}"
