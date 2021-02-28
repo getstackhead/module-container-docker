@@ -41,7 +41,7 @@ resource "docker_container" "stackhead-{{ project_name }}-{{ service.name }}" {
   {% if service.hooks is defined %}
   {% if service.hooks.execute_after_setup is defined %}
   provisioner "local-exec" {
-      command = "docker cp -a {{ stackhead__containerhooks_location }}/afterSetup_{{ service.hooks.execute_after_setup|basename }} stackhead-{{ project_name }}-{{ service.name }}:/afterSetup_{{ service.hooks.execute_after_setup|basename }} && docker exec stackhead-{{ project_name }}-{{ service.name }} sh /afterSetup_{{ service.hooks.execute_after_setup|basename }}"
+      command = "docker cp {{ stackhead__containerhooks_location }}/afterSetup_{{ service.hooks.execute_after_setup|basename }} stackhead-{{ project_name }}-{{ service.name }}:/afterSetup_{{ service.hooks.execute_after_setup|basename }} && docker exec stackhead-{{ project_name }}-{{ service.name }} sh /afterSetup_{{ service.hooks.execute_after_setup|basename }}"
   }
   {% endif %}
   {% endif %}
